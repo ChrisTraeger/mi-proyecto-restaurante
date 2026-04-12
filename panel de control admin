@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Maestro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #D85A30; --dark: #1e272e; --white: #fff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #1e272e;
+    }
+    .login-box {
+      background: white; border-radius: 24px; padding: 40px;
+      width: 100%; max-width: 360px; text-align: center;
+    }
+    .login-logo { font-size: 48px; margin-bottom: 10px; }
+    .login-title { font-size: 22px; font-weight: 800; color: #1e272e; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+    .login-input {
+      width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 12px;
+      font-family: inherit; font-size: 15px; margin-bottom: 12px; outline: none;
+    }
+    .login-input:focus { border-color: var(--primary); }
+    .login-btn {
+      width: 100%; padding: 14px; background: var(--primary); color: white;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .login-btn:hover { background: #c04d26; }
+    .login-error { color: #ff5e57; font-size: 13px; margin-top: 8px; display: none; }
+
+    /* PANEL PRINCIPAL */
+    #panel { display: none; }
+    .topbar {
+      background: #1e272e; color: white; padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-title { font-size: 18px; font-weight: 800; }
+    .topbar-sub { font-size: 12px; color: #888; }
+    .logout-btn {
+      background: transparent; border: 1px solid #444; color: #aaa;
+      padding: 6px 14px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; font-size: 13px;
+    }
+
+    .panel-body { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+
+    /* CLIENTES */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: #888;
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 30px; }
+    .client-card {
+      background: white; border-radius: 16px; padding: 18px;
+      border: 2px solid transparent; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .client-card:hover { border-color: var(--primary); }
+    .client-card.active { border-color: var(--primary); background: #fff5f2; }
+    .client-name { font-size: 15px; font-weight: 700; color: #1e272e; }
+    .client-id { font-size: 11px; color: #888; margin-top: 2px; }
+    .client-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 6px; margin-top: 8px;
+    }
+    .badge-active { background: #05c46b20; color: #05c46b; }
+    .badge-new { background: #3c40c620; color: #3c40c6; }
+
+    .add-client-btn {
+      background: white; border: 2px dashed #ddd; border-radius: 16px;
+      padding: 18px; cursor: pointer; text-align: center;
+      color: #aaa; font-size: 14px; font-weight: 600;
+      font-family: inherit; width: 100%;
+    }
+    .add-client-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* EDITOR */
+    #editor-panel { display: none; background: white; border-radius: 20px; padding: 24px; margin-bottom: 24px; }
+    .editor-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .editor-title { font-size: 18px; font-weight: 800; color: #1e272e; }
+    .editor-actions { display: flex; gap: 8px; }
+
+    .field-group { margin-bottom: 16px; }
+    .field-label { font-size: 12px; font-weight: 700; color: #636e72; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+    .field-input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #eee;
+      border-radius: 10px; font-family: inherit; font-size: 14px; outline: none;
+    }
+    .field-input:focus { border-color: var(--primary); }
+
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .cat-block {
+      background: #f8f9fa; border-radius: 14px; padding: 16px;
+      margin-bottom: 12px; border: 1px solid #eee;
+    }
+    .cat-header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .cat-name-input {
+      flex: 1; padding: 8px 12px; border: 1.5px solid #ddd;
+      border-radius: 8px; font-family: inherit; font-size: 14px;
+      font-weight: 700; outline: none;
+    }
+    .item-block {
+      background: white; border-radius: 10px; padding: 12px;
+      margin-bottom: 8px; border: 1px solid #eee;
+    }
+    .item-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 6px; }
+    .item-input {
+      padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px;
+      font-family: inherit; font-size: 13px; outline: none; width: 100%;
+    }
+    .item-input:focus { border-color: var(--primary); }
+
+    .btn { cursor: pointer; border: none; font-weight: 600; border-radius: 10px; padding: 9px 16px; font-family: inherit; font-size: 13px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #c04d26; }
+    .btn-green { background: #05c46b; color: white; }
+    .btn-green:hover { background: #04a85b; }
+    .btn-blue { background: #3c40c6; color: white; }
+    .btn-red { background: #ff5e57; color: white; font-size: 12px; padding: 6px 12px; }
+    .btn-gray { background: #dfe6e9; color: #636e72; }
+    .btn-orange { background: #ffa801; color: white; }
+    .btn-save-big {
+      width: 100%; padding: 16px; background: #05c46b; color: white;
+      border: none; border-radius: 14px; font-size: 17px; font-weight: 800;
+      cursor: pointer; font-family: inherit; margin-top: 16px;
+    }
+    .btn-save-big:hover { background: #04a85b; }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: #1e272e; color: white; padding: 12px 24px;
+      border-radius: 30px; font-size: 14px; font-weight: 600;
+      opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 9999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">Panel Maestro</div>
+    <div class="login-sub">Solo tú puedes entrar aquí</div>
+    <input class="login-input" type="text" id="login-user" placeholder="Usuario" onkeydown="if(event.key==='Enter') doLogin()">
+    <input class="login-input" type="password" id="login-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">❌ Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="panel">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🍔 Panel Maestro</div>
+      <div class="topbar-sub">Gestión de menús digitales</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="panel-body">
+    <div class="section-title">Mis clientes</div>
+    <div class="clients-grid" id="clients-grid"></div>
+
+    <div id="editor-panel">
+      <div class="editor-header">
+        <div class="editor-title" id="editor-title">Editando cliente</div>
+        <div class="editor-actions">
+          <button class="btn btn-gray" onclick="cerrarEditor()">Cancelar</button>
+          <button class="btn btn-green" onclick="guardarCliente()">💾 Guardar</button>
+        </div>
+      </div>
+
+      <div class="fields-row">
+        <div class="field-group">
+          <label class="field-label">Nombre del negocio</label>
+          <input class="field-input" id="f-brand" placeholder="Ej: Antojo Express">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Celular</label>
+          <input class="field-input" id="f-phone" placeholder="3127447977">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Eslogan</label>
+        <input class="field-input" id="f-slogan" placeholder="Ej: Porque el hambre no espera.">
+      </div>
+      <div class="fields-row">
+        <div class="field-group">
+          <label class="field-label">Nequi</label>
+          <input class="field-input" id="f-nequi" placeholder="Número Nequi">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Bancolombia</label>
+          <input class="field-input" id="f-bancolombia" placeholder="Número de cuenta">
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;">Categorías y productos</div>
+      <div id="cats-editor"></div>
+      <button class="btn btn-blue" onclick="agregarCat()" style="width:100%; margin-top:8px;">+ Nueva categoría</button>
+      <button class="btn-save-big" onclick="guardarCliente()">💾 Guardar todo en la nube</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyByKcM9Z2_PwW0Y9xdbFIfBI6AMviiI4uQ",
+    authDomain: "mi-menu-2f5bd.firebaseapp.com",
+    databaseURL: "https://mi-menu-2f5bd-default-rtdb.firebaseio.com",
+    projectId: "mi-menu-2f5bd",
+    appId: "1:524735114538:web:f7095bb24eedcfe2ff4253"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const CREDS = { user: 'admin', pass: 'antojo2024' };
+  let clienteActivo = null;
+  let catsData = [];
+
+  function doLogin() {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value.trim();
+    if(u === CREDS.user && p === CREDS.pass) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('panel').style.display = 'block';
+      cargarClientes();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('panel').style.display = 'none';
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+  }
+
+  function cargarClientes() {
+    db.ref('clientes').on('value', snap => {
+      const datos = snap.val() || {};
+      const grid = document.getElementById('clients-grid');
+      grid.innerHTML = '';
+      Object.keys(datos).forEach(id => {
+        const c = datos[id];
+        const card = document.createElement('div');
+        card.className = 'client-card' + (clienteActivo === id ? ' active' : '');
+        card.innerHTML = `
+          <div class="client-name">${c.brand || id}</div>
+          <div class="client-id">ID: ${id}</div>
+          <span class="client-badge badge-active">Activo</span>`;
+        card.onclick = () => abrirEditor(id, c);
+        grid.appendChild(card);
+      });
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-client-btn';
+      addBtn.innerHTML = '+ Nuevo cliente';
+      addBtn.onclick = nuevoCliente;
+      grid.appendChild(addBtn);
+    });
+  }
+
+  function nuevoCliente() {
+    const id = prompt('ID del cliente (sin espacios, ej: restaurante-pepe):');
+    if(!id || !id.trim()) return;
+    const cleanId = id.trim().toLowerCase().replace(/\s+/g,'-');
+    const nuevo = { brand: 'Nuevo Negocio', phone: '', slogan: '', nequi: '', bancolombia: '', cats: [] };
+    db.ref('clientes/' + cleanId).set(nuevo).then(() => mostrarToast('✅ Cliente creado'));
+  }
+
+  function abrirEditor(id, datos) {
+    clienteActivo = id;
+    catsData = datos.cats ? JSON.parse(JSON.stringify(datos.cats)) : [];
+    document.getElementById('editor-title').textContent = '✏️ Editando: ' + (datos.brand || id);
+    document.getElementById('f-brand').value = datos.brand || '';
+    document.getElementById('f-phone').value = datos.phone || '';
+    document.getElementById('f-slogan').value = datos.slogan || '';
+    document.getElementById('f-nequi').value = datos.nequi || '';
+    document.getElementById('f-bancolombia').value = datos.bancolombia || '';
+    document.getElementById('editor-panel').style.display = 'block';
+    renderCats();
+    document.getElementById('editor-panel').scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.client-card').forEach(c => c.classList.remove('active'));
+  }
+
+  function cerrarEditor() {
+    clienteActivo = null;
+    document.getElementById('editor-panel').style.display = 'none';
+  }
+
+  function renderCats() {
+    const el = document.getElementById('cats-editor');
+    el.innerHTML = '';
+    catsData.forEach((cat, ci) => {
+      const div = document.createElement('div');
+      div.className = 'cat-block';
+      let itemsHTML = (cat.items || []).map((item, ii) => `
+        <div class="item-block">
+          <div class="item-row">
+            <input class="item-input" placeholder="Nombre del plato" value="${item.name || ''}" onchange="catsData[${ci}].items[${ii}].name=this.value">
+            <input class="item-input" placeholder="Precio" value="${item.price || ''}" onchange="catsData[${ci}].items[${ii}].price=this.value">
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input class="item-input" style="flex:1" placeholder="Descripción / ingredientes" value="${item.desc || ''}" onchange="catsData[${ci}].items[${ii}].desc=this.value">
+            <button class="btn btn-red" onclick="eliminarItem(${ci},${ii})">✕</button>
+          </div>
+        </div>`).join('');
+      div.innerHTML = `
+        <div class="cat-header">
+          <input class="cat-name-input" value="${cat.name || ''}" placeholder="Nombre categoría" onchange="catsData[${ci}].name=this.value">
+          <button class="btn btn-red" onclick="eliminarCat(${ci})">Eliminar</button>
+        </div>
+        ${itemsHTML}
+        <button class="btn btn-orange" onclick="agregarItem(${ci})" style="width:100%; margin-top:4px;">+ Agregar plato</button>`;
+      el.appendChild(div);
+    });
+  }
+
+  function agregarCat() {
+    catsData.push({ name: 'Nueva Categoría', items: [] });
+    renderCats();
+  }
+
+  function eliminarCat(ci) {
+    if(confirm('¿Eliminar esta categoría?')) { catsData.splice(ci, 1); renderCats(); }
+  }
+
+  function agregarItem(ci) {
+    if(!catsData[ci].items) catsData[ci].items = [];
+    catsData[ci].items.push({ name: '', price: '', desc: '' });
+    renderCats();
+  }
+
+  function eliminarItem(ci, ii) {
+    catsData[ci].items.splice(ii, 1);
+    renderCats();
+  }
+
+  function guardarCliente() {
+    if(!clienteActivo) return;
+    const nuevoData = {
+      brand: document.getElementById('f-brand').value,
+      phone: document.getElementById('f-phone').value,
+      slogan: document.getElementById('f-slogan').value,
+      nequi: document.getElementById('f-nequi').value,
+      bancolombia: document.getElementById('f-bancolombia').value,
+      cats: catsData
+    };
+    db.ref('clientes/' + clienteActivo).set(nuevoData).then(() => {
+      mostrarToast('✅ ¡Guardado! El menú de ' + nuevoData.brand + ' ya está actualizado');
+    });
+  }
+
+  function mostrarToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
